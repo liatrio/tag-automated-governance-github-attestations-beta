@@ -27,3 +27,18 @@ Contributions are welcome! Please follow the guidelines in [CONTRIBUTING.md](CON
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+## Verifying
+
+To verify the attestations, you can run the following commands:
+
+```bash
+# To verify the owner is Liatrio
+gh attestation verify oci://ghcr.io/liatrio/tag-automated-governance-github-attestations-beta:{tag} --owner liatrio
+# To verify the package was built from a repo 
+gh attestation verify oci://ghcr.io/liatrio/tag-automated-governance-github-attestations-beta:{tag} --repo liatrio/tag-automated-governance-github-attestations-beta
+# To export the attesttation in JSON format
+gh attestation verify oci://ghcr.io/liatrio/tag-automated-governance-github-attestations-beta:{tag} --owner liatrio --format json
+# To verify it with a rego policy
+gh attestation verify oci://ghcr.io/liatrio/tag-automated-governance-github-attestations-beta:{tag} --owner liatrio --format json | opa eval --stdin-input -f raw -d policy.rego "data.attestation.slsa1.allow == true"
+```
