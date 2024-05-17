@@ -7,6 +7,12 @@ on:
 
 jobs:
   build-and-push:
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+      packages: write
+      
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +41,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build Image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -48,6 +55,6 @@ jobs:
         id: attest
         with:
           subject-name: ghcr.io/${{ github.repository }}
-          subject-digest: ${{ needs.sign.outputs.digest }}
+          subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
