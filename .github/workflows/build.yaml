@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - ian_testing
 
 jobs:
   build-and-push:
@@ -12,7 +13,7 @@ jobs:
       attestations: write
       contents: read
       packages: write
-      
+
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +24,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3 
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -58,3 +59,20 @@ jobs:
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Cosign
+        run: |
+          curl -LO https://github.com/sigstore/cosign/releases/download/v1.4.0/cosign-linux-amd64
+          chmod +x cosign-linux-amd64
+          sudo mv cosign-linux-amd64 /usr/local/bin/cosign
+
+      - name: Verify Image
+        run: |
+          cosign verify ghcr.io/liatrio/tag-automated-governance-github-attestations-beta \
+            --payload=ghcr.io/liatrio/tag-automated-governance-github-attestations-beta@sha256:9801e0612ebd6349136b9b34a8b154f508f26d41c0054a0d6d2e0cafb5889f38 \
+            --certificate-identity=https://github.com/liatrio/tag-automated-governance-github-attestations-beta/.github/workflows/build.yaml@refs/heads/main \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com
